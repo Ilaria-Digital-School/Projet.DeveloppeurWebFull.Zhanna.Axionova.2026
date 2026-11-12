@@ -1,0 +1,70 @@
+erDiagram
+    OBJECTIFS |o--o{ UTILISATEURS : "choisit"
+    OBJECTIFS ||--o{ PROGRAMMES : "est ciblé par"
+    UTILISATEURS ||--o{ SOUSCRIPTIONS : "souscrit"
+    FORMULES ||--o{ SOUSCRIPTIONS : "est souscrite"
+    UTILISATEURS |o--o{ MESSAGES_CONTACT : "envoie"
+    UTILISATEURS |o--o{ BILANS : "réalise"
+
+    OBJECTIFS {
+        int id PK
+        varchar code UK "perte_de_poids, renforcement_musculaire, nutrition"
+        varchar libelle
+    }
+    UTILISATEURS {
+        int id PK
+        varchar prenom
+        varchar email UK
+        varchar mot_de_passe_hash
+        varchar role "client ou admin"
+        int objectif_id FK "facultatif"
+        timestamp created_at
+    }
+    PROGRAMMES {
+        int id PK
+        varchar slug UK
+        varchar titre
+        text description
+        varchar image
+        int objectif_id FK
+    }
+    FORMULES {
+        int id PK
+        varchar nom UK "Découverte, Basic, Premium"
+        decimal prix_mensuel
+        text description
+        boolean est_populaire
+    }
+    SOUSCRIPTIONS {
+        int id PK
+        int utilisateur_id FK
+        int formule_id FK
+        date date_debut
+        date date_fin
+        varchar statut "active, terminee, annulee"
+    }
+    MESSAGES_CONTACT {
+        int id PK
+        varchar nom
+        varchar email
+        varchar sujet "programme, tarif, autre"
+        text message
+        varchar statut "nouveau, lu, traite"
+        int utilisateur_id FK "facultatif"
+        timestamp created_at
+    }
+    BILANS {
+        int id PK
+        int utilisateur_id FK "facultatif"
+        decimal poids_kg
+        int taille_cm
+        int age
+        varchar sexe
+        varchar objectif_calcul "perte, masse, forme"
+        decimal imc
+        int kcal
+        int proteines_g
+        int glucides_g
+        int lipides_g
+        timestamp created_at
+    }

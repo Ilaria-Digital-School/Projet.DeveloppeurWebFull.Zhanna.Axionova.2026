@@ -1,0 +1,76 @@
+// MCD (Modèle Conceptuel de Données) - Power Website
+// Généré avec Graphviz : dot -Tpng mcd.dot -o mcd.png
+graph MCD {
+  graph [fontname="Helvetica", nodesep=0.7, ranksep=1.1, pad=0.4, bgcolor="white",
+         label=<<B>MCD - Power Website</B><BR/><FONT POINT-SIZE="11">Entité en or = utilisée par la première fonctionnalité (formulaire de contact)</FONT>>,
+         labelloc=t, fontsize=18];
+  node [fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=12, color="#444444", labeldistance=2.2, labelfontcolor="#b00020"];
+
+  // ---------- Entités ----------
+  UTILISATEUR [shape=plain, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f2937"><FONT COLOR="white"><B>UTILISATEUR</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_utilisateur</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">prenom<BR ALIGN="LEFT"/>email<BR ALIGN="LEFT"/>mot_de_passe_hash<BR ALIGN="LEFT"/>role<BR ALIGN="LEFT"/>date_inscription<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  OBJECTIF [shape=plain, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f2937"><FONT COLOR="white"><B>OBJECTIF</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_objectif</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">code<BR ALIGN="LEFT"/>libelle<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  PROGRAMME [shape=plain, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f2937"><FONT COLOR="white"><B>PROGRAMME</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_programme</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">slug<BR ALIGN="LEFT"/>titre<BR ALIGN="LEFT"/>description<BR ALIGN="LEFT"/>image<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  FORMULE [shape=plain, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f2937"><FONT COLOR="white"><B>FORMULE</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_formule</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">nom<BR ALIGN="LEFT"/>prix_mensuel<BR ALIGN="LEFT"/>description<BR ALIGN="LEFT"/>est_populaire<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  MESSAGE_CONTACT [shape=plain, label=<
+    <TABLE BORDER="2" COLOR="#c99c3a" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#c99c3a"><B>MESSAGE_CONTACT</B></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_message</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">nom<BR ALIGN="LEFT"/>email<BR ALIGN="LEFT"/>sujet<BR ALIGN="LEFT"/>message<BR ALIGN="LEFT"/>statut<BR ALIGN="LEFT"/>date_envoi<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  BILAN [shape=plain, label=<
+    <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="4">
+      <TR><TD BGCOLOR="#1f2937"><FONT COLOR="white"><B>BILAN</B></FONT></TD></TR>
+      <TR><TD ALIGN="LEFT"><U>id_bilan</U></TD></TR><HR/>
+      <TR><TD ALIGN="LEFT">poids_kg<BR ALIGN="LEFT"/>taille_cm<BR ALIGN="LEFT"/>age<BR ALIGN="LEFT"/>sexe<BR ALIGN="LEFT"/>objectif_calcul<BR ALIGN="LEFT"/>imc<BR ALIGN="LEFT"/>kcal<BR ALIGN="LEFT"/>proteines_g<BR ALIGN="LEFT"/>glucides_g<BR ALIGN="LEFT"/>lipides_g<BR ALIGN="LEFT"/>date_bilan<BR ALIGN="LEFT"/></TD></TR>
+    </TABLE>>];
+
+  // ---------- Associations ----------
+  node [shape=ellipse, style=filled, fillcolor="#eef2ff", color="#4f46e5"];
+  CHOISIR   [label="CHOISIR"];
+  CIBLER    [label="CIBLER"];
+  SOUSCRIRE [label="SOUSCRIRE\n─────────\ndate_debut\ndate_fin\nstatut"];
+  ENVOYER   [label="ENVOYER"];
+  REALISER  [label="REALISER"];
+
+  // ---------- Liaisons et cardinalités (lues côté entité) ----------
+  CHOISIR -- UTILISATEUR    [headlabel="0,1", labelangle=-45, labeldistance=2.6];
+  CHOISIR -- OBJECTIF       [headlabel="0,n"];
+
+  CIBLER  -- PROGRAMME      [headlabel="1,1"];
+  CIBLER  -- OBJECTIF       [headlabel="0,n"];
+
+  SOUSCRIRE -- UTILISATEUR  [headlabel="0,n", labelangle=75, labeldistance=3.2];
+  SOUSCRIRE -- FORMULE      [headlabel="0,n"];
+
+  ENVOYER -- MESSAGE_CONTACT [headlabel="0,1"];
+  ENVOYER -- UTILISATEUR     [headlabel="0,n", labelangle=-60, labeldistance=3.0];
+
+  REALISER -- BILAN          [headlabel="0,1"];
+  REALISER -- UTILISATEUR    [headlabel="0,n", labelangle=-30, labeldistance=2.6];
+}
