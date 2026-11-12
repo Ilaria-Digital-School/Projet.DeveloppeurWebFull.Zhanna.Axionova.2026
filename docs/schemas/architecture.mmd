@@ -1,0 +1,35 @@
+flowchart LR
+    subgraph FRONT["FRONTEND  (navigateur)"]
+        direction TB
+        P["pages/contact.html<br/>formulaire"]
+        V["assets/js/validation.js<br/>regex + fetch"]
+        CJ["contact.js + config.js<br/>URL de l'API"]
+        P --- V
+        CJ --- V
+    end
+
+    subgraph BACK["BACKEND  Node.js natif  (backend/src)"]
+        direction TB
+        S["server.js<br/>http.createServer + listen"]
+        A["app.js<br/>CORS · erreurs · 404/405"]
+        R["routes/<br/>POST /api/contact"]
+        C["controllers/<br/>contact.controller.js"]
+        U["utils/<br/>http.js · validators.js · errors.js"]
+        M["models/<br/>contact.model.js"]
+        S --> A --> R --> C
+        C --> U
+        C --> M
+    end
+
+    DB[("STOCKAGE<br/>aujourd'hui : data/messages.json<br/>cible : base SQL (docs/schemas/mld)")]
+
+    V == "① POST /api/contact<br/>JSON {nom, email, sujet, message}" ==> S
+    M == "② écriture" ==> DB
+    C -. "③ réponse JSON<br/>201 · 400 · 413 · 415 · 5xx" .-> V
+
+    classDef front fill:#fff7e0,stroke:#c99c3a,color:#000
+    classDef back fill:#eef2ff,stroke:#4f46e5,color:#000
+    classDef db fill:#e8f5e9,stroke:#2e7d32,color:#000
+    class P,V,CJ front
+    class S,A,R,C,U,M back
+    class DB db

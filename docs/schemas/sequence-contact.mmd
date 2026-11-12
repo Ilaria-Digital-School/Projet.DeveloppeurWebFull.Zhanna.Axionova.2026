@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    actor V as Visiteur
+    participant N as Navigateur<br/>(validation.js)
+    participant A as app.js
+    participant C as contact.controller
+    participant U as validators.js
+    participant M as contact.model
+    participant D as Stockage<br/>(messages.json)
+
+    V->>N: remplit puis envoie le formulaire
+    N->>N: validation côté client (regex)
+    alt champs invalides côté client
+        N-->>V: messages d'erreur sous les champs
+    else champs valides
+        N->>A: POST /api/contact (JSON)
+        A->>A: en-têtes CORS + recherche de la route
+        A->>C: creerMessage(req, res)
+        C->>C: lecture du corps (415 / 413 / 400 si JSON incorrect)
+        C->>U: validerContact(données)
+        alt données invalides côté serveur
+            U-->>C: erreurs par champ
+            C-->>N: 400 {success:false, errors}
+            N-->>V: erreurs affichées sous les champs
+        else données valides
+            U-->>C: valeurs nettoyées
+            C->>M: create(valeurs)
+            M->>D: écriture du message
+            D-->>M: ok
+            M-->>C: message enregistré (id)
+            C-->>N: 201 {success:true, data:{id}}
+            N-->>V: message de succès + formulaire vidé
+        end
+    end
+    Note over N,A: Serveur éteint ou injoignable :<br/>fetch échoue, le navigateur affiche<br/>« Impossible de joindre le serveur »
