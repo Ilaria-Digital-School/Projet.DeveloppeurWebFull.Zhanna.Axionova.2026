@@ -329,18 +329,17 @@ header nav[aria-label="Navigation principale"] a[aria-current="page"] {
 /* ============================================================
    Formulaires : validation côté client (voir validation.js)
    ============================================================ */
+/* La hauteur est réservée même quand il n'y a pas d'erreur : le formulaire ne « saute »
+   donc pas quand un message apparaît ou disparaît (sinon le bouton Envoyer bouge sous le clic). */
 .champ-erreur {
     display: block;
-    margin-top: 6px;
+    min-height: 1.3em;
+    margin-top: 4px;
     color: #ff9b9b;
     font-size: 0.9rem;
     font-weight: 400;
     letter-spacing: normal;
     text-transform: none;
-}
-
-.champ-erreur:empty {
-    display: none;
 }
 
 [aria-invalid="true"] {

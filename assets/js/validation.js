@@ -109,6 +109,10 @@ var PW = (function () {
     /** Validation au fil de la saisie : à la sortie du champ, puis à chaque frappe. */
     function validationEnDirect(form) {
         Array.prototype.forEach.call(champsAValider(form), function (champ) {
+            // On crée la zone d'erreur dès le départ (vide) : si elle apparaissait
+            // seulement au moment de l'erreur, le bouton « Envoyer » se décalerait
+            // pendant le clic et le clic raterait le bouton.
+            zoneErreur(champ);
             champ.addEventListener('blur', function () { validerChamp(champ); });
             champ.addEventListener('input', function () {
                 if (champ.getAttribute('aria-invalid') === 'true') {
@@ -129,8 +133,40 @@ var PW = (function () {
         return zone;
     }
 
-    /** Envoi asynchrone (fetch) : la page ne se recharge pas. */
-    function envoyer(form, messageSucces) {
+    /**
+     * Affiche une erreur renvoyée par le serveur.
+     * Si le serveur détaille les champs fautifs (ex. { email: "..." }), le message
+     * s'affiche sous chaque champ ; sinon, un message général s'affiche en bas du formulaire.
+     */
+    function afficherErreursServeur(form, statut, corps, codeHttp) {
+        statut.className = 'statut-formulaire erreur';
+
+        if (corps && corps.errors) {
+            var premier = null;
+            Object.keys(corps.errors).forEach(function (nom) {
+                var champ = form.elements[nom];
+                if (champ && champ.id) {
+                    afficherErreur(champ, corps.errors[nom]);
+                    if (!premier) { premier = champ; }
+                }
+            });
+            if (premier) { premier.focus(); }
+            statut.textContent = 'Merci de corriger les champs signalés.';
+        } else if (codeHttp >= 500) {
+            // On n'affiche jamais le détail d'une erreur serveur à l'utilisateur.
+            statut.textContent = 'Le serveur a rencontré un problème, merci de réessayer plus tard.';
+        } else {
+            statut.textContent = (corps && corps.message) ||
+                'Une erreur est survenue, merci de réessayer dans un instant.';
+        }
+    }
+
+    /**
+     * Envoi asynchrone (fetch) : la page ne se recharge pas.
+     * options.url    : adresse où envoyer les données (par défaut : l'API de démonstration)
+     * options.succes : message affiché si le serveur ne fournit pas le sien
+     */
+    function envoyer(form, options) {
         var statut = zoneStatut(form);
         var bouton = form.querySelector('[type="submit"]');
         var donnees = {};
@@ -143,26 +179,34 @@ var PW = (function () {
         });
 
         statut.className = 'statut-formulaire';
-        statut.textContent = 'Envoi en cours…';
+        statut.textContent = 'Envoi en cours\u2026';
         if (bouton) { bouton.disabled = true; }
 
-        return fetch(ENDPOINT, {
+        return fetch(options.url || ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(donnees)
         })
             .then(function (reponse) {
-                if (!reponse.ok) { throw new Error('HTTP ' + reponse.status); }
-                return reponse.json();
+                // On lit la réponse JSON du serveur (succès comme erreur).
+                return reponse.json().then(
+                    function (corps) { return { ok: reponse.ok, status: reponse.status, corps: corps }; },
+                    function () { return { ok: reponse.ok, status: reponse.status, corps: null }; }
+                );
             })
-            .then(function () {
-                statut.className = 'statut-formulaire succes';
-                statut.textContent = messageSucces;
-                form.reset();
+            .then(function (resultat) {
+                if (resultat.ok) {
+                    statut.className = 'statut-formulaire succes';
+                    statut.textContent = (resultat.corps && resultat.corps.message) || options.succes;
+                    form.reset();
+                } else {
+                    afficherErreursServeur(form, statut, resultat.corps, resultat.status);
+                }
             })
             .catch(function () {
+                // fetch échoue (et n'a donc aucune réponse) quand le serveur est éteint ou injoignable.
                 statut.className = 'statut-formulaire erreur';
-                statut.textContent = 'Une erreur est survenue, merci de réessayer dans un instant.';
+                statut.textContent = 'Impossible de joindre le serveur. Vérifie ta connexion ou réessaie dans un instant.';
             })
             .then(function () {
                 if (bouton) { bouton.disabled = false; }
@@ -172,7 +216,7 @@ var PW = (function () {
     /**
      * Branche un formulaire : validation regex + envoi asynchrone.
      * @param {HTMLFormElement} form
-     * @param {{succes: string}} options
+     * @param {{succes: string, url?: string}} options
      */
     function initFormulaire(form, options) {
         if (!form) { return; }
@@ -181,7 +225,7 @@ var PW = (function () {
         form.addEventListener('submit', function (evenement) {
             evenement.preventDefault();
             if (validerFormulaire(form)) {
-                envoyer(form, options.succes);
+                envoyer(form, options);
             }
         });
     }
