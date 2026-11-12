@@ -1,0 +1,16 @@
+{
+  "name": "power-website-backend",
+  "version": "1.0.0",
+  "description": "Backend Node.js natif (module http, sans framework) du site Power Website",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test"
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "private": true
+}
